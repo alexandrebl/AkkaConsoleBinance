@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AkkaConsoleBinance.Library;
+using AkkaConsoleBinance.Repository;
+using BinanceCryptoCurrency.Processor;
+using BinanceCryptoCurrency.Utility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -21,13 +25,18 @@ namespace AkkaConsoleBinance
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var configurationFileApp = new ConfigurationFileApp();
+            var httpUtilityTool = new HttpUtilityTool();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+            services.AddSingleton<IBinanceProcessor>(
+                new BinanceProcessor(new Uri(configurationFileApp.BinanceUrl), httpUtilityTool));
+            services.AddSingleton<TickerRepository>(new TickerRepository(configurationFileApp.ConnectionString));
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
